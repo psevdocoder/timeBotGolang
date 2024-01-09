@@ -1,33 +1,31 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
 	tele "gopkg.in/telebot.v3"
 	"log"
-	"os"
 	"time"
 	"timeBotGolang/bot"
-	"timeBotGolang/parser"
+	"timeBotGolang/config"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
+
+	conf, err := config.LoadConfig()
+	if err != nil {
 		log.Fatal(err)
 	}
-	bot.Whitelist = bot.LoadWhitelist()
-	parser.CityURL = os.Getenv("CITY_URL")
 
 	b, err := tele.NewBot(tele.Settings{
-		Token:  os.Getenv("TELEGRAM_TOKEN"),
+		Token:  conf.TelegramToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	b.Use(bot.LoggingMiddleware, bot.AccessMiddleware)
-
+	b.Use(bot.LoggingTestMiddleware(), bot.AccessMiddleware(conf.Whitelist))
 	b.Handle("/start", bot.StartHandler)
+
+	b.Handle("/whitelist", bot.EditWhitelist(conf))
 
 	b.Start()
 
