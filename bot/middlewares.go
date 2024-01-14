@@ -18,10 +18,22 @@ func AccessMiddleware(whitelist []int64) tele.MiddlewareFunc {
 	}
 }
 
+func AdminAccessMiddleware(id int64) tele.MiddlewareFunc {
+	return func(next tele.HandlerFunc) tele.HandlerFunc {
+		return func(c tele.Context) error {
+			if c.Sender().ID != id {
+				log.Printf("[%d] is not admin.", c.Sender().ID)
+				return nil
+			}
+			return next(c)
+		}
+	}
+}
+
 func LoggingTestMiddleware() tele.MiddlewareFunc {
 	return func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
-			log.Printf("[%d] executed [%s]\n", c.Sender().ID, c.Text())
+			log.Printf("[%d] [%s] executed [%s]\n", c.Sender().ID, c.Sender().Username, c.Text())
 			return next(c)
 		}
 	}

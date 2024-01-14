@@ -12,8 +12,6 @@ import (
 
 const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
 
-var CityURL string
-
 type roundTripper struct {
 	next http.RoundTripper
 }
@@ -48,8 +46,8 @@ func (t *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-func (c *Client) GetTimetable() []time.Time {
-	resp, err := c.Get(CityURL)
+func (c *Client) GetTimetable(cityURL string) []time.Time {
+	resp, err := c.Get(cityURL)
 	if err != nil {
 		log.Fatal(err)
 	}

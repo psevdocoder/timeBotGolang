@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"github.com/vitaliy-ukiru/fsm-telebot"
 	tele "gopkg.in/telebot.v3"
 	"log"
 	"strconv"
@@ -9,29 +10,41 @@ import (
 	"timeBotGolang/config"
 )
 
+var (
+	WhitelistStateGroup = fsm.NewStateGroup("whitelist")
+	WhitelistState      = WhitelistStateGroup.New("startwhitelist")
+)
+
 func StartHandler(c tele.Context) error {
 	return c.Send("Hello!")
 }
 
-func EditWhitelist(conf *config.Config) func(c tele.Context) error {
-	return func(c tele.Context) error {
-		idsStr := strings.Fields(c.Text())
-		log.Println(idsStr)
-
-		newWhitelist, err := StrArrToInt64Arr(idsStr)
-		if err != nil {
-			return c.Send(fmt.Printf("Check your input. Error: %s", err))
-		}
-		conf.EditWhitelist(newWhitelist)
-		return c.Send("Hello!")
-
-		//TODO FSM
-
-		//variable := []int64{2, 3, 4}
-		//
-		//conf.EditWhitelist(variable)
-		//return c.Send("added")
+func EditWhitelist(c tele.Context, state fsm.Context) error {
+	if err := state.Set(WhitelistState); err != nil {
+		log.Println(err)
+		return c.Send(err)
 	}
+	return c.Send("Write the IDs separated by space.\nType '0' if you want to set only admin.")
+}
+
+func WhitelistStateOnInputIDs(conf *config.Config) func(c tele.Context, state fsm.Context) error {
+	return func(c tele.Context, state fsm.Context) error {
+		go func() {
+			if err := state.Finish(true); err != nil {
+				log.Println(err)
+			}
+		}()
+
+		idsStr := strings.Fields(c.Text())
+		idsInt64, err := StrArrToInt64Arr(idsStr)
+		if err != nil {
+			return c.Send(fmt.Sprintf("Check your input. Error: %s", err))
+		}
+		conf.EditWhitelist(idsInt64)
+		return c.Send(fmt.Sprintf(
+			"Your new whitelist: %v", strings.Trim(fmt.Sprint(conf.Whitelist), "[]")))
+	}
+
 }
 
 func StrArrToInt64Arr(idsStr []string) ([]int64, error) {

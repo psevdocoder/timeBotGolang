@@ -3,15 +3,17 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"slices"
+	"time"
 )
 
 type Config struct {
 	Whitelist     []int64 `json:"whitelist"`
 	AdminID       int64
-	TelegramToken string `json:"telegramToken"`
-	CityURL       string `json:"cityURL"`
-	UpdateTime    string `json:"updateTime"`
-	TimeTill      int    `json:"timeTill"`
+	TelegramToken string        `json:"telegramToken"`
+	CityURL       string        `json:"cityURL"`
+	UpdateTime    string        `json:"updateTime"`
+	TimeTill      time.Duration `json:"timeTill"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -33,13 +35,19 @@ func (c *Config) SetUpdateTime(updateTime string) {
 	updateConfig(c)
 }
 
-func (c *Config) SetTimeTill(timeTill int) {
+func (c *Config) SetTimeTill(timeTill time.Duration) {
 	c.TimeTill = timeTill
 	updateConfig(c)
 }
 
 func (c *Config) EditWhitelist(whitelist []int64) {
-	c.Whitelist = append(c.Whitelist, whitelist...)
+	switch {
+	case slices.Contains(whitelist, 0) && len(whitelist) == 1:
+		c.Whitelist = []int64{c.AdminID}
+	case !slices.Contains(whitelist, 0):
+		whitelist = append(whitelist, c.AdminID)
+		c.Whitelist = whitelist
+	}
 	updateConfig(c)
 }
 
