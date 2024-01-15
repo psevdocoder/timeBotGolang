@@ -30,11 +30,13 @@ func AdminAccessMiddleware(id int64) tele.MiddlewareFunc {
 	}
 }
 
-func LoggingTestMiddleware() tele.MiddlewareFunc {
-	return func(next tele.HandlerFunc) tele.HandlerFunc {
-		return func(c tele.Context) error {
-			log.Printf("[%d] [%s] executed [%s]\n", c.Sender().ID, c.Sender().Username, c.Text())
+func LoggingMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		if c.Callback() == nil {
+			log.Printf("[%d] [%s] sent [%v]\n", c.Sender().ID, c.Sender().Username, c.Message().Text)
 			return next(c)
 		}
+		log.Printf("[%d] [%s] pressed BTN [%v]\n", c.Sender().ID, c.Sender().Username, c.Callback().Unique)
+		return next(c)
 	}
 }

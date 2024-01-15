@@ -36,13 +36,14 @@ func NewClient(timeout time.Duration) (*Client, error) {
 
 func (t *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("User-Agent", userAgent)
-	log.Printf("Making request to: %s %s", req.Method, req.URL)
+	log.Printf("Making request: [%s] %s", req.Method, req.URL)
+	now := time.Now()
 	resp, err := t.next.RoundTrip(req)
 	if err != nil {
 		log.Printf("Request failed: %v", err)
 		return nil, err
 	}
-	log.Printf("Request successful. Status: %s", resp.Status)
+	log.Printf("Request successful. Status: %s. Elapsed time: %s", resp.Status, time.Since(now))
 	return resp, nil
 }
 

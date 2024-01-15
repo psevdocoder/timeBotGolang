@@ -22,14 +22,24 @@ func InitBot(conf *config.Config) {
 
 	storage := memory.NewStorage()
 
-	b.Use(LoggingTestMiddleware(), AccessMiddleware(conf.Whitelist))
+	InitReplyMarkups()
+
+	b.Use(LoggingMiddleware, AccessMiddleware(conf.Whitelist))
 	b.Handle("/start", StartHandler)
+	b.Handle(&btnToMenu, SendMenu)
+	b.Handle(&btnGetTimetable, GetTimetable)
 
 	adminOnly := b.Group()
 	adminOnly.Use(AdminAccessMiddleware(conf.AdminID))
 	adminOnlyManager := fsm.NewManager(b, adminOnly, storage, nil)
-	adminOnlyManager.Bind("/whitelist", fsm.AnyState, EditWhitelist)
-	adminOnlyManager.Bind(tele.OnText, WhitelistState, WhitelistStateOnInputIDs(conf))
+	adminOnlyManager.Bind(&btnEditWhitelist, fsm.AnyState, handleEditWhitelist)
+	adminOnlyManager.Bind(tele.OnText, whitelistState, whitelistStateOnInputIDs(conf))
+	adminOnlyManager.Bind(&btnSetURL, fsm.AnyState, handleSetURL)
+	adminOnlyManager.Bind(tele.OnText, setURLState, setURLStateOnInputURL(conf))
+	adminOnlyManager.Bind(&btnUpdateTime, fsm.AnyState, handleUpdateTime)
+	adminOnlyManager.Bind(tele.OnText, setUpdateTimeState, updateTimeStateOnInputTime(conf))
+	adminOnlyManager.Bind(&btnTimeTill, fsm.AnyState, handleTimeTill)
+	adminOnlyManager.Bind(tele.OnText, timeTillState, timeTillStateOnInputTime(conf))
 
 	go scheduler.InitScheduler(conf, b)
 	b.Start()

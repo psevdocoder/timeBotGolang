@@ -10,6 +10,8 @@ import (
 	"timeBotGolang/parser"
 )
 
+var Timetable []time.Time
+
 func DailyJobs(s gocron.Scheduler, conf *config.Config, b *tele.Bot) {
 	UpdateAt, err := time.Parse("15:04", conf.UpdateTime)
 	if err != nil {
@@ -28,7 +30,7 @@ func DailyJobs(s gocron.Scheduler, conf *config.Config, b *tele.Bot) {
 
 func AddTimeTableTasks(s gocron.Scheduler, conf *config.Config, b *tele.Bot) {
 	client, _ := parser.NewClient(time.Second * 10)
-	timetable := client.GetTimetable(conf.CityURL)
+	Timetable = client.GetTimetable(conf.CityURL)
 	chatByID, err := b.ChatByID(conf.AdminID)
 	if err != nil {
 		log.Println(err)
@@ -39,10 +41,13 @@ func AddTimeTableTasks(s gocron.Scheduler, conf *config.Config, b *tele.Bot) {
 		return
 	}
 
-	for _, item := range timetable {
-		log.Println(item)
+	log.Printf("Loaded timetable: %v", Timetable)
+
+	for _, item := range Timetable {
 		msg := fmt.Sprintf("Next time in %d minutes at %s", conf.TimeTill, item.Format("15:04"))
-		notifyAt := item.Add(-conf.TimeTill * time.Minute)
+
+		minusTime := time.Duration(conf.TimeTill) * time.Minute
+		notifyAt := item.Add(-minusTime)
 		_, err := s.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time.Date(
 			notifyAt.Year(), notifyAt.Month(), notifyAt.Day(), notifyAt.Hour(), notifyAt.Minute(),
 			//time.Now().Year(), time.Now().Month(), time.Now().Day(), 20, 5,
@@ -55,6 +60,7 @@ func AddTimeTableTasks(s gocron.Scheduler, conf *config.Config, b *tele.Bot) {
 }
 
 func sendNotification(b *tele.Bot, conf *config.Config, msg string) {
+	log.Printf("Sending notification [%s]", msg)
 	for _, user := range conf.Whitelist {
 		chatByID, err := b.ChatByID(user)
 		if err != nil {
