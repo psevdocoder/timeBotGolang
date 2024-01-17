@@ -12,11 +12,11 @@ import (
 	"timeBotGolang/scheduler"
 )
 
-func StartHandler(c tele.Context) error {
-	return SendMenu(c)
+func startHandler(c tele.Context) error {
+	return sendMenu(c)
 }
 
-func SendMenu(c tele.Context) error {
+func sendMenu(c tele.Context) error {
 
 	if c.Message().Text == "/start" {
 		return c.Send("Choose your option.", menuReplyMarkup)
@@ -24,7 +24,17 @@ func SendMenu(c tele.Context) error {
 	return c.Edit("Choose your option.", menuReplyMarkup)
 }
 
-func GetTimetable(c tele.Context) error {
+func adminMenu(conf *config.Config) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		if err := c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2}); err != nil {
+			log.Println(err)
+		}
+		time.Sleep(time.Second * 1)
+		return c.Send("What to change?", adminReplyMarkup)
+	}
+}
+
+func getTimetable(c tele.Context) error {
 	date := scheduler.Timetable[0].Format("02-01-2006")
 
 	var timetableMSG = fmt.Sprintf("Timetable for %s:\n", date)
@@ -56,8 +66,7 @@ func whitelistStateOnInputIDs(conf *config.Config) func(c tele.Context, state fs
 			return c.Send(fmt.Sprintf("Check your input. Error: %s", err))
 		}
 		conf.EditWhitelist(idsInt64)
-		return c.Send(fmt.Sprintf(
-			"Your new whitelist: %v", strings.Trim(fmt.Sprint(conf.Whitelist), "[]")), menuReplyMarkup)
+		return c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
 	}
 }
 
@@ -77,7 +86,7 @@ func setURLStateOnInputURL(conf *config.Config) func(c tele.Context, state fsm.C
 			}
 		}()
 		conf.SetCityURL(c.Text())
-		return c.Send(fmt.Sprintf("Your new URL: %s", conf.CityURL), menuReplyMarkup)
+		return c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
 	}
 }
 
@@ -102,7 +111,7 @@ func updateTimeStateOnInputTime(conf *config.Config) func(c tele.Context, state 
 			return c.Send(fmt.Sprintf("Check your input. Error: %s", err))
 		}
 		conf.SetUpdateTime(c.Text())
-		return c.Send(fmt.Sprintf("Your new daily update time: %s", conf.UpdateTime), menuReplyMarkup)
+		return c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
 	}
 }
 
@@ -126,7 +135,7 @@ func timeTillStateOnInputTime(conf *config.Config) func(c tele.Context, state fs
 			return c.Send(fmt.Sprintf("Check your input. Error: %s", err))
 		}
 		conf.SetTimeTill(timeTill)
-		return c.Send(fmt.Sprintf("Your new time till: %d", conf.TimeTill), menuReplyMarkup)
+		return c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
 	}
 }
 

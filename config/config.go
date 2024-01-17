@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"slices"
 )
@@ -24,19 +25,25 @@ func LoadConfig() (*Config, error) {
 	return &config, nil
 }
 
+func (c *Config) String() string {
+	return fmt.Sprintf("*Current bot configuration*\nWhitelist: "+
+		"%v\nCityURL: `%v`\nUpdate at: `%v`\nSend mins before: %v\n",
+		c.Whitelist, c.CityURL, c.UpdateTime, c.TimeTill)
+}
+
 func (c *Config) SetCityURL(url string) {
 	c.CityURL = url
-	updateConfig(c)
+	c.updateConfig()
 }
 
 func (c *Config) SetUpdateTime(updateTime string) {
 	c.UpdateTime = updateTime
-	updateConfig(c)
+	c.updateConfig()
 }
 
 func (c *Config) SetTimeTill(timeTill int) {
 	c.TimeTill = timeTill
-	updateConfig(c)
+	c.updateConfig()
 }
 
 func (c *Config) EditWhitelist(whitelist []int64) {
@@ -47,10 +54,10 @@ func (c *Config) EditWhitelist(whitelist []int64) {
 		whitelist = append(whitelist, c.AdminID)
 		c.Whitelist = whitelist
 	}
-	updateConfig(c)
+	c.updateConfig()
 }
 
-func updateConfig(config *Config) {
-	file, _ := json.MarshalIndent(config, "", "  ")
+func (c *Config) updateConfig() {
+	file, _ := json.MarshalIndent(c, "", "  ")
 	_ = os.WriteFile("config/config.json", file, 0644)
 }

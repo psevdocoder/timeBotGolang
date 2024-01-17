@@ -3,12 +3,14 @@ package bot
 import tele "gopkg.in/telebot.v3"
 
 var (
-	menuReplyMarkup  = &tele.ReplyMarkup{}
-	btnGetTimetable  = menuReplyMarkup.Data("Timetable", "timetable")
-	btnEditWhitelist = menuReplyMarkup.Data("Whitelist", "whitelist")
-	btnSetURL        = menuReplyMarkup.Data("Set URL", "setUrl")
-	btnUpdateTime    = menuReplyMarkup.Data("Update Time", "updateTime")
-	btnTimeTill      = menuReplyMarkup.Data("Time Till", "timeTill")
+	menuReplyMarkup = &tele.ReplyMarkup{}
+	btnGetTimetable = menuReplyMarkup.Data("Timetable", "timetable")
+
+	adminReplyMarkup = &tele.ReplyMarkup{}
+	btnEditWhitelist = adminReplyMarkup.Data("Whitelist", "whitelist")
+	btnSetURL        = adminReplyMarkup.Data("Set URL", "setUrl")
+	btnUpdateTime    = adminReplyMarkup.Data("Update Time", "updateTime")
+	btnTimeTill      = adminReplyMarkup.Data("Time Till", "timeTill")
 
 	toMenuReplyMarkup = &tele.ReplyMarkup{}
 	btnToMenu         = toMenuReplyMarkup.Data("Back", "back")
@@ -17,6 +19,9 @@ var (
 func InitReplyMarkups() {
 	menuReplyMarkup.Inline(
 		menuReplyMarkup.Row(btnGetTimetable),
+	)
+
+	adminReplyMarkup.Inline(
 		menuReplyMarkup.Row(btnEditWhitelist, btnSetURL),
 		menuReplyMarkup.Row(btnUpdateTime, btnTimeTill),
 	)
