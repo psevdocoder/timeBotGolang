@@ -16,6 +16,7 @@ RUN apk update --no-cache && apk add --no-cache ca-certificates tzdata
 
 ENV TZ=Europe/Moscow
 VOLUME /app/config
+VOLUME /app/logs
 
 WORKDIR /app
 COPY --from=builder /app/BotApp ./BotApp
