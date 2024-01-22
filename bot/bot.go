@@ -13,7 +13,7 @@ import (
 func InitBot(conf *config.Config) {
 	b, err := tele.NewBot(tele.Settings{
 		Token:  conf.TelegramToken,
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		Poller: &tele.LongPoller{Timeout: 60 * time.Second},
 	})
 	if err != nil {
 		log.Fatal(err)

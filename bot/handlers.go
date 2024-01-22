@@ -17,7 +17,6 @@ func startHandler(c tele.Context) error {
 }
 
 func sendMenu(c tele.Context) error {
-
 	if c.Message().Text == "/start" {
 		return c.Send("Choose your option.", menuReplyMarkup)
 	}

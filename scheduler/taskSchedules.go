@@ -42,13 +42,12 @@ func AddTimeTableTasks(s gocron.Scheduler, conf *config.Config, b *tele.Bot) {
 	}
 
 	log.Printf("Loaded timetable: %v", Timetable)
-
 	for _, item := range Timetable {
 		msg := fmt.Sprintf("Next time in %d minutes at %s", conf.TimeTill, item.Format("15:04"))
 
 		minusTime := time.Duration(conf.TimeTill) * time.Minute
 		notifyAt := item.Add(-minusTime)
-		_, err := s.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time.Date(
+		_, err = s.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time.Date(
 			notifyAt.Year(), notifyAt.Month(), notifyAt.Day(), notifyAt.Hour(), notifyAt.Minute(),
 			//time.Now().Year(), time.Now().Month(), time.Now().Day(), 20, 5,
 			0, 0, time.Local))),
@@ -57,6 +56,7 @@ func AddTimeTableTasks(s gocron.Scheduler, conf *config.Config, b *tele.Bot) {
 			log.Println(err)
 		}
 	}
+
 }
 
 func sendNotification(b *tele.Bot, conf *config.Config, msg string) {

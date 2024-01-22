@@ -22,8 +22,9 @@ func InitReplyMarkups() {
 	)
 
 	adminReplyMarkup.Inline(
-		menuReplyMarkup.Row(btnEditWhitelist, btnSetURL),
-		menuReplyMarkup.Row(btnUpdateTime, btnTimeTill),
+		adminReplyMarkup.Row(btnEditWhitelist, btnSetURL),
+		adminReplyMarkup.Row(btnUpdateTime, btnTimeTill),
+		adminReplyMarkup.Row(btnToMenu),
 	)
 
 	toMenuReplyMarkup.Inline(
