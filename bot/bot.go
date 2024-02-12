@@ -16,7 +16,7 @@ func InitBot(conf *config.Config) {
 		Poller: &tele.LongPoller{Timeout: 60 * time.Second},
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	log.Printf("Bot %s started\n", b.Me.Username)
 
