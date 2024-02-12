@@ -50,19 +50,19 @@ func (t *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 func (c *Client) GetTimetable(cityURL string) []time.Time {
 	resp, err := c.Get(cityURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	defer func(Body io.ReadCloser) {
-		err := Body.Close()
+		err = Body.Close()
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}(resp.Body)
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	var timetable []time.Time
 
