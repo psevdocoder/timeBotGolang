@@ -8,7 +8,7 @@ WORKDIR /app
 ADD go.mod .
 COPY . .
 
-RUN go build -o BotApp
+RUN go build -o BotApp ./cmd/main.go
 
 FROM alpine:3.19
 
