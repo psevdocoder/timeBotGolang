@@ -35,7 +35,7 @@ func NewConfig() (*Config, error) {
 	return &config, nil
 }
 
-func (c *Config) String() string {
+func (c *Config) ToString() string {
 	return fmt.Sprintf("*Current bot configuration*\nWhitelist: "+
 		"%v\nCityURL: `%v`\nUpdate at: `%v`\nSend mins before: %v\n",
 		c.Whitelist, c.CityURL, c.UpdateTime, c.TimeTill)

@@ -30,8 +30,6 @@ func main() {
 
 	myBot.Start()
 
-	//go bot.InitBot(conf)
-
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
