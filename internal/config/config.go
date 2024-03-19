@@ -69,5 +69,5 @@ func (c *Config) EditWhitelist(whitelist []int64) {
 
 func (c *Config) updateConfig() {
 	file, _ := json.MarshalIndent(c, "", "  ")
-	_ = os.WriteFile("configs/configs.json", file, 0644)
+	_ = os.WriteFile("configs/config.json", file, 0644)
 }

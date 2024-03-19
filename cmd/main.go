@@ -16,10 +16,7 @@ func main() {
 		log.Println("Failed to open log file:", err)
 	}
 	defer func(file *os.File) {
-		err = file.Close()
-		if err != nil {
-			log.Println("Failed to close log file:", err)
-		}
+		_ = file.Close()
 	}(file)
 
 	log.SetOutput(io.MultiWriter(file, os.Stdout))
