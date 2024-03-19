@@ -3,6 +3,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/spf13/viper"
+	"log"
 	"os"
 	"slices"
 )
@@ -16,12 +18,20 @@ type Config struct {
 	TimeTill      int    `json:"timeTill"`
 }
 
-func LoadConfig() (*Config, error) {
-	file, err := os.ReadFile("config/config.json")
+func NewConfig() (*Config, error) {
 	var config Config
-	if err = json.Unmarshal(file, &config); err != nil {
+	viper.SetConfigName("config")
+	viper.SetConfigType("json")
+	viper.AddConfigPath("configs")
+	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
+	if err := viper.Unmarshal(&config); err != nil {
+		return nil, err
+	}
+
+	log.Printf("%+v", config)
+
 	return &config, nil
 }
 
@@ -59,5 +69,5 @@ func (c *Config) EditWhitelist(whitelist []int64) {
 
 func (c *Config) updateConfig() {
 	file, _ := json.MarshalIndent(c, "", "  ")
-	_ = os.WriteFile("config/config.json", file, 0644)
+	_ = os.WriteFile("configs/configs.json", file, 0644)
 }

@@ -6,8 +6,8 @@ import (
 	tele "gopkg.in/telebot.v3"
 	"log"
 	"time"
-	"timeBotGolang/config"
-	"timeBotGolang/scheduler"
+	"timeBotGolang/internal/config"
+	"timeBotGolang/internal/scheduler"
 )
 
 func InitBot(conf *config.Config) {

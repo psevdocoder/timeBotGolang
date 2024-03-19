@@ -6,8 +6,8 @@ import (
 	tele "gopkg.in/telebot.v3"
 	"log"
 	"time"
-	"timeBotGolang/config"
-	"timeBotGolang/parser"
+	"timeBotGolang/internal/config"
+	"timeBotGolang/internal/parser"
 )
 
 var Timetable []time.Time

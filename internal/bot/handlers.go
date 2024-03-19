@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"timeBotGolang/config"
-	"timeBotGolang/scheduler"
+	"timeBotGolang/internal/config"
+	"timeBotGolang/internal/scheduler"
 )
 
 func startHandler(c tele.Context) error {

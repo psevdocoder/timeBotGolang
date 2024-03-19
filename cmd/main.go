@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"timeBotGolang/bot"
-	"timeBotGolang/config"
+	"timeBotGolang/internal/bot"
+	"timeBotGolang/internal/config"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 
 	log.SetOutput(io.MultiWriter(file, os.Stdout))
 
-	conf, err := config.LoadConfig()
+	conf, err := config.NewConfig()
 	if err != nil {
 		log.Println(err)
 	}
