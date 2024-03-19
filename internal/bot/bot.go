@@ -10,7 +10,13 @@ import (
 	"timeBotGolang/internal/scheduler"
 )
 
-func InitBot(conf *config.Config) {
+type TimeBot struct {
+	Bot       *tele.Bot
+	conf      *config.Config
+	timetable []time.Time
+}
+
+func NewBot(conf *config.Config) *TimeBot {
 	b, err := tele.NewBot(tele.Settings{
 		Token:  conf.TelegramToken,
 		Poller: &tele.LongPoller{Timeout: 60 * time.Second},
@@ -18,7 +24,6 @@ func InitBot(conf *config.Config) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Printf("Bot %s started\n", b.Me.Username)
 
 	storage := memory.NewStorage()
 
@@ -44,6 +49,11 @@ func InitBot(conf *config.Config) {
 	adminOnlyManagerFSM.Bind(&btnTimeTill, fsm.AnyState, handleTimeTill)
 	adminOnlyManagerFSM.Bind(tele.OnText, timeTillState, timeTillStateOnInputTime(conf))
 
-	go scheduler.InitScheduler(conf, b)
-	b.Start()
+	return &TimeBot{Bot: b, conf: conf}
+}
+
+func (b *TimeBot) Start() {
+	go scheduler.InitScheduler(b.conf, b.Bot)
+	go b.Bot.Start()
+	log.Printf("Bot %s started\n", b.Bot.Me.Username)
 }
