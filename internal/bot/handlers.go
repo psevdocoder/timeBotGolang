@@ -8,8 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"timeBotGolang/config"
-	"timeBotGolang/scheduler"
+	"timeBotGolang/internal/config"
 )
 
 func startHandler(c tele.Context) error {
@@ -25,7 +24,7 @@ func sendMenu(c tele.Context) error {
 
 func adminMenu(conf *config.Config) func(c tele.Context) error {
 	return func(c tele.Context) error {
-		if err := c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2}); err != nil {
+		if err := c.Send(conf.ToString(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2}); err != nil {
 			log.Println(err)
 		}
 		time.Sleep(time.Second * 1)
@@ -33,14 +32,16 @@ func adminMenu(conf *config.Config) func(c tele.Context) error {
 	}
 }
 
-func getTimetable(c tele.Context) error {
-	date := scheduler.Timetable[0].Format("02-01-2006")
+func getTimetable(b *TimeBot) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		date := b.timetable[0].Format("02-01-2006")
 
-	var timetableMSG = fmt.Sprintf("Timetable for %s:\n", date)
-	for _, item := range scheduler.Timetable {
-		timetableMSG += item.Format("- 15:04") + "\n"
+		var timetableMSG = fmt.Sprintf("Timetable for %s:\n", date)
+		for _, item := range b.timetable {
+			timetableMSG += item.Format("- 15:04") + "\n"
+		}
+		return c.Edit(timetableMSG, toMenuReplyMarkup)
 	}
-	return c.Edit(timetableMSG, toMenuReplyMarkup)
 }
 
 func handleEditWhitelist(c tele.Context, state fsm.Context) error {
@@ -58,14 +59,14 @@ func whitelistStateOnInputIDs(conf *config.Config) func(c tele.Context, state fs
 				log.Println(err)
 			}
 		}()
-
 		idsStr := strings.Fields(c.Text())
-		idsInt64, err := StrArrToInt64Arr(idsStr)
+		idsInt64, err := strArrToInt64Arr(idsStr)
 		if err != nil {
 			return c.Send(fmt.Sprintf("Check your input. Error: %s", err))
 		}
 		conf.EditWhitelist(idsInt64)
-		return c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
+		return c.Send(conf.ToString(),
+			&tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
 	}
 }
 
@@ -85,7 +86,8 @@ func setURLStateOnInputURL(conf *config.Config) func(c tele.Context, state fsm.C
 			}
 		}()
 		conf.SetCityURL(c.Text())
-		return c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
+		return c.Send(conf.ToString(),
+			&tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
 	}
 }
 
@@ -110,7 +112,8 @@ func updateTimeStateOnInputTime(conf *config.Config) func(c tele.Context, state 
 			return c.Send(fmt.Sprintf("Check your input. Error: %s", err))
 		}
 		conf.SetUpdateTime(c.Text())
-		return c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
+		return c.Send(conf.ToString(),
+			&tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
 	}
 }
 
@@ -134,11 +137,12 @@ func timeTillStateOnInputTime(conf *config.Config) func(c tele.Context, state fs
 			return c.Send(fmt.Sprintf("Check your input. Error: %s", err))
 		}
 		conf.SetTimeTill(timeTill)
-		return c.Send(conf.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
+		return c.Send(conf.ToString(),
+			&tele.SendOptions{ParseMode: tele.ModeMarkdownV2, ReplyMarkup: adminReplyMarkup})
 	}
 }
 
-func StrArrToInt64Arr(idsStr []string) ([]int64, error) {
+func strArrToInt64Arr(idsStr []string) ([]int64, error) {
 	var idsInt64 []int64
 	for _, id := range idsStr {
 		idInt64, err := strconv.ParseInt(id, 10, 64)

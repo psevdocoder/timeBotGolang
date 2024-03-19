@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"timeBotGolang/bot"
-	"timeBotGolang/config"
+	"timeBotGolang/internal/bot"
+	"timeBotGolang/internal/config"
 )
 
 func main() {
@@ -16,20 +16,19 @@ func main() {
 		log.Println("Failed to open log file:", err)
 	}
 	defer func(file *os.File) {
-		err = file.Close()
-		if err != nil {
-			log.Println("Failed to close log file:", err)
-		}
+		_ = file.Close()
 	}(file)
 
 	log.SetOutput(io.MultiWriter(file, os.Stdout))
 
-	conf, err := config.LoadConfig()
+	conf, err := config.NewConfig()
 	if err != nil {
 		log.Println(err)
 	}
 
-	go bot.InitBot(conf)
+	myBot := bot.NewBot(conf)
+
+	myBot.Start()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)

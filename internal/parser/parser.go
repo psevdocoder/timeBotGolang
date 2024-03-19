@@ -66,11 +66,23 @@ func (c *Client) GetTimetable(cityURL string) []time.Time {
 	}
 	var timetable []time.Time
 
-	requiredIndexes := []int{1, 3, 4, 5, 6}
+	columnCount := 0
+	doc.Find("tr.active_day td").Each(func(i int, tr *goquery.Selection) {
+		columnCount++
+	})
+
+	var requiredIndexes []int
+
+	switch columnCount {
+	case 7:
+		requiredIndexes = []int{1, 3, 4, 5, 6}
+	case 9:
+		requiredIndexes = []int{2, 4, 5, 6, 8}
+	}
+
 	doc.Find("tr.active_day td").Each(func(i int, td *goquery.Selection) {
 		if slices.Contains(requiredIndexes, i) {
 			timeText := td.Find("b").Text()
-
 			inTimeFormat, _ := time.Parse("15:04", timeText)
 			now := time.Now()
 			datetimeFormat := time.Date(now.Year(), now.Month(), now.Day(), inTimeFormat.Hour(),
