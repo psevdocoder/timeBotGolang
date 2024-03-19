@@ -6,6 +6,6 @@ services:
     image: time_bot:1.0
     container_name: time_bot
     volumes:
-      - ./configs/configs.json:/app/configs/configs.json
+      - ./configs/config.json:/app/configs/config.json
       - ./logs:/app/logs
     restart: unless-stopped
