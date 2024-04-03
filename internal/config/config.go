@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/viper"
-	"log"
 	"os"
 	"slices"
 )
@@ -29,8 +28,6 @@ func NewConfig() (*Config, error) {
 	if err := viper.Unmarshal(&config); err != nil {
 		return nil, err
 	}
-
-	log.Printf("%+v", config)
 
 	return &config, nil
 }
