@@ -49,7 +49,7 @@ func (t *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	req.Header.Set("User-Agent", userAgent)
 
-	log.Info("Sending request", slog.String("url", fmt.Sprintf("%v, %v", req.Method, req.URL)))
+	log.Debug("Sending request", slog.String("url", fmt.Sprintf("%v, %v", req.Method, req.URL)))
 
 	now := time.Now()
 	resp, err := t.next.RoundTrip(req)
@@ -59,7 +59,7 @@ func (t *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	log.Info("Request finished", slog.Duration(
+	log.Debug("Request finished", slog.Duration(
 		"duration", time.Since(now)), slog.Int("status", resp.StatusCode))
 	return resp, nil
 }

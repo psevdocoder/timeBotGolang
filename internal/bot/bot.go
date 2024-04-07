@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/vitaliy-ukiru/fsm-telebot"
@@ -46,25 +47,25 @@ func (b *TimeBot) Start() {
 
 	InitReplyMarkups()
 
-	b.Bot.Use(LoggingMiddleware, AccessMiddleware(&b.conf.Whitelist))
-	b.Bot.Handle("/start", startHandler)
-	b.Bot.Handle(&btnGetTimetable, getTimetable(b))
-	b.Bot.Handle(&btnToMenu, sendMenu)
+	b.Bot.Use(LoggingMiddleware(b.log), AccessMiddleware(&b.conf.Whitelist, b.log))
+	b.Bot.Handle("/start", b.startHandler)
+	b.Bot.Handle(&btnGetTimetable, b.getTimetable)
+	b.Bot.Handle(&btnToMenu, b.sendMenu)
 
 	adminOnly := b.Bot.Group()
-	adminOnly.Use(AdminAccessMiddleware(b.conf.AdminID))
+	adminOnly.Use(AdminAccessMiddleware(b.conf.AdminID, b.log))
 
-	adminOnly.Handle("/admin", adminMenu(b.conf))
+	adminOnly.Handle("/admin", b.adminMenu)
 
 	adminOnlyManagerFSM := fsm.NewManager(b.Bot, adminOnly, storage, nil)
-	adminOnlyManagerFSM.Bind(&btnEditWhitelist, fsm.AnyState, handleEditWhitelist)
-	adminOnlyManagerFSM.Bind(tele.OnText, whitelistState, whitelistStateOnInputIDs(b.conf))
-	adminOnlyManagerFSM.Bind(&btnSetURL, fsm.AnyState, handleSetURL)
-	adminOnlyManagerFSM.Bind(tele.OnText, setURLState, setURLStateOnInputURL(b.conf))
-	adminOnlyManagerFSM.Bind(&btnUpdateTime, fsm.AnyState, handleUpdateTime)
-	adminOnlyManagerFSM.Bind(tele.OnText, setUpdateTimeState, updateTimeStateOnInputTime(b.conf))
-	adminOnlyManagerFSM.Bind(&btnTimeTill, fsm.AnyState, handleTimeTill)
-	adminOnlyManagerFSM.Bind(tele.OnText, timeTillState, timeTillStateOnInputTime(b.conf))
+	adminOnlyManagerFSM.Bind(&btnEditWhitelist, fsm.AnyState, b.handleEditWhitelist)
+	adminOnlyManagerFSM.Bind(tele.OnText, whitelistState, b.whitelistStateOnInputIDs)
+	adminOnlyManagerFSM.Bind(&btnSetURL, fsm.AnyState, b.handleSetURL)
+	adminOnlyManagerFSM.Bind(tele.OnText, setURLState, b.setURLStateOnInputURL)
+	adminOnlyManagerFSM.Bind(&btnUpdateTime, fsm.AnyState, b.handleUpdateTime)
+	adminOnlyManagerFSM.Bind(tele.OnText, setUpdateTimeState, b.updateTimeStateOnInputTime)
+	adminOnlyManagerFSM.Bind(&btnTimeTill, fsm.AnyState, b.handleTimeTill)
+	adminOnlyManagerFSM.Bind(tele.OnText, timeTillState, b.timeTillStateOnInputTime)
 
 	b.AddTimeTableTasks()
 	b.DailyJobs()
@@ -109,7 +110,7 @@ func (b *TimeBot) AddTimeTableTasks() {
 		return
 	}
 
-	log.Info("Time table loaded", slog.String("array", fmt.Sprint(b.timetable)))
+	log.Info("Timetable loaded", slog.String("timetable", fmt.Sprint(b.timetable)))
 	for _, item := range b.timetable {
 		msg := fmt.Sprintf("Next time in %d minutes at %s", b.conf.TimeTill, item.Format("15:04"))
 
@@ -121,6 +122,10 @@ func (b *TimeBot) AddTimeTableTasks() {
 			0, 0, time.Local))),
 			gocron.NewTask(b.sendNotification, msg))
 		if err != nil {
+			if errors.Is(err, gocron.ErrOneTimeJobStartDateTimePast) {
+				log.Debug("Past time was skipped", slog.String("error", err.Error()))
+				continue
+			}
 			log.Error("Failed to add job", slog.String("error", err.Error()))
 		}
 	}

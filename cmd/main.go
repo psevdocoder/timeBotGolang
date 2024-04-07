@@ -46,7 +46,7 @@ func SetupLogger() (*slog.Logger, *os.File) {
 
 	multiWriter := io.MultiWriter(file, os.Stdout)
 
-	logger = slog.New(slog.NewJSONHandler(multiWriter, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	logger = slog.New(slog.NewJSONHandler(multiWriter, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	return logger, file
 }
