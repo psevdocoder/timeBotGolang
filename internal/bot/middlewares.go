@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	tele "gopkg.in/telebot.v3"
 	"log/slog"
 	"slices"
@@ -14,8 +15,8 @@ func AccessMiddleware(whitelist *[]int64, log *slog.Logger) tele.MiddlewareFunc 
 		return func(c tele.Context) error {
 			if !slices.Contains(*whitelist, c.Chat().ID) {
 				log.Warn("Non whitelisted user tried to use bot",
-					slog.Int64("username", c.Chat().ID),
-					slog.String("chat_id", c.Chat().Username))
+					slog.Int64("chat_id", c.Chat().ID),
+					slog.String("username", fmt.Sprintf("[%v]", c.Chat().Username)))
 				return nil
 			}
 			return next(c)
