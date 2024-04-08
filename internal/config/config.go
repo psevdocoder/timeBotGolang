@@ -15,6 +15,7 @@ type Config struct {
 	CityURL       string `json:"cityURL"`
 	UpdateTime    string `json:"updateTime"`
 	TimeTill      int    `json:"timeTill"`
+	Env           string
 }
 
 func NewConfig() (*Config, error) {

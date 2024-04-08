@@ -98,13 +98,19 @@ func (b *TimeBot) AddTimeTableTasks() {
 	const op = "bot.AddTimeTableTasks"
 	log := b.log.With(slog.String("op", op))
 
-	client, _ := parser.NewClient(time.Second*10, b.log)
+	client, err := parser.NewClient(time.Second*10, b.log)
+	if err != nil {
+		log.Error("Failed to create client", slog.String("error", err.Error()))
+		return
+	}
+
 	b.timetable = client.GetTimetable(b.conf.CityURL)
 	chatByID, err := b.Bot.ChatByID(b.conf.AdminID)
 	if err != nil {
 		log.Error("Failed to load chat id", slog.String("error", err.Error()))
 		return
 	}
+
 	if _, err = b.Bot.Send(chatByID, "Requested to site"); err != nil {
 		log.Error("Failed to send message", slog.String("error", err.Error()))
 		return

@@ -24,10 +24,6 @@ type Client struct {
 }
 
 func NewClient(timeout time.Duration, log *slog.Logger) (*Client, error) {
-	const op = "parser.NewClient"
-	log = log.With(slog.String("op", op))
-	log.Debug("Creating client", slog.Duration("timeout", timeout))
-
 	if timeout == 0 {
 		return nil, errors.New("timeout must be greater than 0")
 	}
@@ -49,14 +45,19 @@ func (t *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	req.Header.Set("User-Agent", userAgent)
 
-	log.Debug("Sending request", slog.String("url", fmt.Sprintf("%v, %v", req.Method, req.URL)))
+	//log.Debug("Sending request",
+	//	slog.String("URL", req.URL.String()),
+	//	slog.String("Method", req.Method))
 
 	now := time.Now()
 	resp, err := t.next.RoundTrip(req)
 
 	if err != nil {
-		log.Error("Failed to send request", slog.String("error", err.Error()))
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	log.Debug("Request finished", slog.Duration(
@@ -69,8 +70,10 @@ func (c *Client) GetTimetable(cityURL string) []time.Time {
 	log := c.log.With(slog.String("op", op))
 
 	resp, err := c.Get(cityURL)
+
 	if err != nil {
-		log.Error("Failed to send request", slog.String("error", err.Error()))
+		log.Error("Request failed", slog.String("error", err.Error()))
+		return nil
 	}
 
 	defer func(Body io.ReadCloser) {
