@@ -150,3 +150,24 @@ func strArrToInt64Arr(idsStr []string) ([]int64, error) {
 	}
 	return idsInt64, nil
 }
+
+func (b *TimeBot) getNearTime(c tele.Context) error {
+	var nearest time.Time
+	for _, t := range b.timetable {
+		if t.After(time.Now()) {
+			if t.Before(nearest) || nearest.IsZero() {
+				nearest = t
+			}
+		}
+	}
+
+	durationTill := time.Until(nearest)
+	hours := int(durationTill.Hours())
+	minutes := int(durationTill.Minutes()) % 60
+
+	if hours > 0 {
+		return c.Send(fmt.Sprintf("Next time in %dh %dm at %v", hours, minutes, nearest.Format("15:04")))
+	} else {
+		return c.Send(fmt.Sprintf("Next time in %dm at %v", minutes, nearest.Format("15:04")))
+	}
+}

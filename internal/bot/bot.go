@@ -51,6 +51,7 @@ func (b *TimeBot) Start() {
 	b.Bot.Handle("/start", b.startHandler)
 	b.Bot.Handle(&btnGetTimetable, b.getTimetable)
 	b.Bot.Handle(&btnToMenu, b.sendMenu)
+	b.Bot.Handle("/near", b.getNearTime)
 
 	adminOnly := b.Bot.Group()
 	adminOnly.Use(AdminAccessMiddleware(b.conf.AdminID, b.log))
